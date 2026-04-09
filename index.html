@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Counter</title>
+<title>counter</title>
 <style>
     body {
         margin: 0;
         background: #111;
-        color: white;
+        color: #fff;
         font-family: sans-serif;
         display: flex;
         justify-content: center;
@@ -17,25 +17,17 @@
         user-select: none;
     }
 
-    #container {
+    #counter {
+        font-size: 80px;
         text-align: center;
     }
 
-    #count {
-        font-size: 80px;
-        margin-bottom: 20px;
-    }
-
-    #step {
-        font-size: 20px;
-        opacity: 0.6;
-    }
-
-    .btns {
+    /* スマホ用ボタン */
+    #mobileControls {
+        position: fixed;
+        bottom: 20px;
         display: none;
-        margin-top: 20px;
         gap: 10px;
-        justify-content: center;
     }
 
     button {
@@ -52,7 +44,7 @@
     }
 
     @media (pointer: coarse) {
-        .btns {
+        #mobileControls {
             display: flex;
         }
     }
@@ -60,27 +52,22 @@
 </head>
 <body>
 
-<div id="container">
-    <div id="count">0</div>
-    <div id="step">step: 1</div>
+<div id="counter">0</div>
 
-    <div class="btns">
-        <button onclick="change(-step)">−</button>
-        <button onclick="reset()">0</button>
-        <button onclick="change(step)">＋</button>
-    </div>
+<div id="mobileControls">
+    <button onclick="change(-step)">-</button>
+    <button onclick="reset()">0</button>
+    <button onclick="change(step)">+</button>
 </div>
 
 <script>
 let count = 0;
 let step = 1;
 
-const countEl = document.getElementById("count");
-const stepEl = document.getElementById("step");
+const counter = document.getElementById("counter");
 
 function update() {
-    countEl.textContent = count;
-    stepEl.textContent = "step: " + step;
+    counter.textContent = count;
 }
 
 function change(val) {
@@ -93,52 +80,49 @@ function reset() {
     update();
 }
 
-// クリック
-document.addEventListener("mousedown", e => {
-    if (e.button === 0) change(-step); // 左
-    if (e.button === 2) change(step);  // 右
-});
-
-// 右クリックメニュー無効
-document.addEventListener("contextmenu", e => e.preventDefault());
-
-// ホイール
-document.addEventListener("wheel", e => {
-    if (e.ctrlKey) return; // Ctrl中は別処理
-    if (e.deltaY < 0) change(step);
-    else change(-step);
-});
-
-// ホイール押し込み（中央クリック）
-document.addEventListener("mousedown", e => {
-    if (e.button === 1) reset();
-});
-
-// Ctrl + ホイールでstep変更
-document.addEventListener("wheel", e => {
-    if (!e.ctrlKey) return;
-
-    if (e.deltaY < 0) step++;
-    else step--;
-
-    if (step === 0) step = -1;
-
-    update();
-});
-
-// Ctrl + ホイール押し込みでstepリセット
-document.addEventListener("mousedown", e => {
-    if (e.button === 1 && e.ctrlKey) {
-        step = 1;
-        update();
+// 右クリックで増やし / 左クリックで減らし
+document.addEventListener("mousedown", (e) => {
+    if (e.button === 0) {
+        change(-step);
+    } else if (e.button === 2) {
+        change(step);
+    } else if (e.button === 1) {
+        reset();
     }
 });
 
-// Ctrl + ↑キーでも変更
-document.addEventListener("keydown", e => {
-    if (e.ctrlKey && e.key === "ArrowUp") {
-        step++;
-        update();
+// 右クリックメニュー禁止
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+// マウスホイール
+document.addEventListener("wheel", (e) => {
+    if (e.ctrlKey && e.button === 1) {
+        step = 1;
+        return;
+    }
+
+    // Shift + ホイール上 → step変更
+    if (e.shiftKey) {
+        if (e.deltaY < 0) {
+            step++;
+        } else {
+            step--;
+            if (step === 0) step = -1;
+        }
+        return;
+    }
+
+    if (e.deltaY < 0) {
+        change(step);
+    } else {
+        change(-step);
+    }
+});
+
+// Ctrl + ホイール押し込みでstepリセット
+document.addEventListener("mousedown", (e) => {
+    if (e.button === 1 && e.ctrlKey) {
+        step = 1;
     }
 });
 
