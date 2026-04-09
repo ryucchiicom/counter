@@ -22,7 +22,6 @@
         text-align: center;
     }
 
-    /* スマホ用ボタン */
     #mobileControls {
         position: fixed;
         bottom: 20px;
@@ -80,12 +79,14 @@ function reset() {
     update();
 }
 
-// 右クリックで増やし / 左クリックで減らし
+// クリック処理
 document.addEventListener("mousedown", (e) => {
+    let amount = e.shiftKey ? step : 1;
+
     if (e.button === 0) {
-        change(-step);
+        change(-amount);
     } else if (e.button === 2) {
-        change(step);
+        change(amount);
     } else if (e.button === 1) {
         reset();
     }
@@ -94,14 +95,9 @@ document.addEventListener("mousedown", (e) => {
 // 右クリックメニュー禁止
 document.addEventListener("contextmenu", e => e.preventDefault());
 
-// マウスホイール
+// ホイール処理
 document.addEventListener("wheel", (e) => {
-    if (e.ctrlKey && e.button === 1) {
-        step = 1;
-        return;
-    }
-
-    // Shift + ホイール上 → step変更
+    // Shiftでstep変更
     if (e.shiftKey) {
         if (e.deltaY < 0) {
             step++;
