@@ -22,6 +22,14 @@
         text-align: center;
     }
 
+    #step {
+        position: fixed;
+        top: 20px;
+        font-size: 20px;
+        opacity: 0;
+        transition: 0.15s;
+    }
+
     #mobileControls {
         position: fixed;
         bottom: 20px;
@@ -52,6 +60,7 @@
 <body>
 
 <div id="counter">0</div>
+<div id="step">step: 1</div>
 
 <div id="mobileControls">
     <button onclick="change(-step)">-</button>
@@ -64,9 +73,11 @@ let count = 0;
 let step = 1;
 
 const counter = document.getElementById("counter");
+const stepDisplay = document.getElementById("step");
 
 function update() {
     counter.textContent = count;
+    stepDisplay.textContent = "step: " + step;
 }
 
 function change(val) {
@@ -79,6 +90,19 @@ function reset() {
     update();
 }
 
+// Shift表示制御
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Shift") {
+        stepDisplay.style.opacity = 1;
+    }
+});
+
+document.addEventListener("keyup", (e) => {
+    if (e.key === "Shift") {
+        stepDisplay.style.opacity = 0;
+    }
+});
+
 // クリック操作
 document.addEventListener("mousedown", (e) => {
 
@@ -90,6 +114,7 @@ document.addEventListener("mousedown", (e) => {
             step--;
             if (step === 0) step = -1;
         }
+        update();
         return;
     }
 
@@ -117,6 +142,7 @@ document.addEventListener("wheel", (e) => {
             step--;
             if (step === 0) step = -1;
         }
+        update();
         return;
     }
 
@@ -132,6 +158,7 @@ document.addEventListener("wheel", (e) => {
 document.addEventListener("mousedown", (e) => {
     if (e.button === 1 && e.ctrlKey) {
         step = 1;
+        update();
     }
 });
 
