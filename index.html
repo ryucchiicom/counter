@@ -79,14 +79,25 @@ function reset() {
     update();
 }
 
-// クリック処理
+// クリック操作
 document.addEventListener("mousedown", (e) => {
-    let amount = e.shiftKey ? step : 1;
 
+    // Shift押しながらクリック → step変更
+    if (e.shiftKey) {
+        if (e.button === 2) {
+            step++;
+        } else if (e.button === 0) {
+            step--;
+            if (step === 0) step = -1;
+        }
+        return;
+    }
+
+    // 通常操作
     if (e.button === 0) {
-        change(-amount);
+        change(-step);
     } else if (e.button === 2) {
-        change(amount);
+        change(step);
     } else if (e.button === 1) {
         reset();
     }
@@ -95,9 +106,10 @@ document.addEventListener("mousedown", (e) => {
 // 右クリックメニュー禁止
 document.addEventListener("contextmenu", e => e.preventDefault());
 
-// ホイール処理
+// マウスホイール
 document.addEventListener("wheel", (e) => {
-    // Shiftでstep変更
+
+    // Shift + ホイール → step変更
     if (e.shiftKey) {
         if (e.deltaY < 0) {
             step++;
@@ -108,6 +120,7 @@ document.addEventListener("wheel", (e) => {
         return;
     }
 
+    // 通常ホイール
     if (e.deltaY < 0) {
         change(step);
     } else {
