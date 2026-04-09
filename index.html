@@ -63,9 +63,9 @@
 <div id="step">step: 1</div>
 
 <div id="mobileControls">
-    <button onclick="change(-step)">-</button>
+    <button id="minus">-</button>
     <button onclick="reset()">0</button>
-    <button onclick="change(step)">+</button>
+    <button id="plus">+</button>
 </div>
 
 <script>
@@ -90,39 +90,27 @@ function reset() {
     update();
 }
 
-// Shift表示制御
+// ===== Shift表示 =====
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Shift") {
-        stepDisplay.style.opacity = 1;
-    }
+    if (e.key === "Shift") stepDisplay.style.opacity = 1;
 });
-
 document.addEventListener("keyup", (e) => {
-    if (e.key === "Shift") {
-        stepDisplay.style.opacity = 0;
-    }
+    if (e.key === "Shift") stepDisplay.style.opacity = 0;
 });
 
-// クリック操作
+// ===== PC操作 =====
 document.addEventListener("mousedown", (e) => {
 
     if (e.shiftKey) {
-        if (e.button === 2) {
-            step++;
-        } else if (e.button === 0) {
-            step--;
-        }
+        if (e.button === 2) step++;
+        if (e.button === 0) step--;
         update();
         return;
     }
 
-    if (e.button === 0) {
-        change(-step);
-    } else if (e.button === 2) {
-        change(step);
-    } else if (e.button === 1) {
-        reset();
-    }
+    if (e.button === 0) change(-step);
+    if (e.button === 2) change(step);
+    if (e.button === 1) reset();
 });
 
 document.addEventListener("contextmenu", e => e.preventDefault());
@@ -130,26 +118,51 @@ document.addEventListener("contextmenu", e => e.preventDefault());
 document.addEventListener("wheel", (e) => {
 
     if (e.shiftKey) {
-        if (e.deltaY < 0) {
-            step++;
-        } else {
-            step--;
-        }
+        if (e.deltaY < 0) step++;
+        else step--;
         update();
         return;
     }
 
-    if (e.deltaY < 0) {
-        change(step);
-    } else {
-        change(-step);
-    }
+    if (e.deltaY < 0) change(step);
+    else change(-step);
 });
 
 document.addEventListener("mousedown", (e) => {
     if (e.button === 1 && e.ctrlKey) {
         step = 1;
         update();
+    }
+});
+
+// ===== スマホ操作 =====
+let pressTimer;
+
+// +ボタン
+document.getElementById("plus").addEventListener("touchstart", () => {
+    pressTimer = setTimeout(() => {
+        step++;
+        update();
+    }, 500);
+});
+document.getElementById("plus").addEventListener("touchend", () => {
+    if (pressTimer) {
+        clearTimeout(pressTimer);
+        change(1);
+    }
+});
+
+// -ボタン
+document.getElementById("minus").addEventListener("touchstart", () => {
+    pressTimer = setTimeout(() => {
+        step--;
+        update();
+    }, 500);
+});
+document.getElementById("minus").addEventListener("touchend", () => {
+    if (pressTimer) {
+        clearTimeout(pressTimer);
+        change(-1);
     }
 });
 
