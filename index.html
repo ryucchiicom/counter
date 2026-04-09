@@ -15,6 +15,7 @@
         align-items: center;
         height: 100vh;
         user-select: none;
+        flex-direction: column;
     }
 
     #counter {
@@ -23,9 +24,8 @@
     }
 
     #step {
-        position: fixed;
-        top: 20px;
         font-size: 20px;
+        margin-top: 10px;
         opacity: 0;
         transition: 0.15s;
     }
@@ -106,19 +106,16 @@ document.addEventListener("keyup", (e) => {
 // クリック操作
 document.addEventListener("mousedown", (e) => {
 
-    // Shift押しながらクリック → step変更
     if (e.shiftKey) {
         if (e.button === 2) {
             step++;
         } else if (e.button === 0) {
             step--;
-            if (step === 0) step = -1;
         }
         update();
         return;
     }
 
-    // 通常操作
     if (e.button === 0) {
         change(-step);
     } else if (e.button === 2) {
@@ -128,25 +125,20 @@ document.addEventListener("mousedown", (e) => {
     }
 });
 
-// 右クリックメニュー禁止
 document.addEventListener("contextmenu", e => e.preventDefault());
 
-// マウスホイール
 document.addEventListener("wheel", (e) => {
 
-    // Shift + ホイール → step変更
     if (e.shiftKey) {
         if (e.deltaY < 0) {
             step++;
         } else {
             step--;
-            if (step === 0) step = -1;
         }
         update();
         return;
     }
 
-    // 通常ホイール
     if (e.deltaY < 0) {
         change(step);
     } else {
@@ -154,7 +146,6 @@ document.addEventListener("wheel", (e) => {
     }
 });
 
-// Ctrl + ホイール押し込みでstepリセット
 document.addEventListener("mousedown", (e) => {
     if (e.button === 1 && e.ctrlKey) {
         step = 1;
