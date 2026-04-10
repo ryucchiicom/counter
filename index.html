@@ -6,76 +6,76 @@
 <title>counter</title>
 
 <style>
-    body {
-        margin: 0;
-        font-family: sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        user-select: none;
-        flex-direction: column;
-        transition: 0.2s;
-    }
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    user-select: none;
+    flex-direction: column;
+    transition: 0.2s;
+}
 
-    #counter {
-        font-size: 80px;
-        text-align: center;
-    }
+#counter {
+    font-size: 80px;
+}
 
-    #step {
-        font-size: 20px;
-        margin-top: 10px;
-        opacity: 0;
-        transition: 0.15s;
-    }
+#step {
+    font-size: 20px;
+    margin-top: 10px;
+    opacity: 0;
+    transition: 0.15s;
+}
 
+#mobileControls {
+    position: fixed;
+    bottom: 20px;
+    display: none;
+    gap: 10px;
+}
+
+button {
+    font-size: 22px;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #333;
+    color: white;
+    transition: 0.15s;
+}
+
+button.active {
+    background: #2b6cff !important;
+}
+
+@media (pointer: coarse) {
     #mobileControls {
-        position: fixed;
-        bottom: 20px;
-        display: none;
-        gap: 10px;
+        display: flex;
     }
-
-    button {
-        font-size: 22px;
-        padding: 12px 18px;
-        border: none;
-        border-radius: 10px;
-        background: #333;
-        color: white;
-    }
-
-    button:active {
-        background: #555;
-    }
-
-    @media (pointer: coarse) {
-        #mobileControls {
-            display: flex;
-        }
-    }
+}
 </style>
-</head>
 
+</head>
 <body>
 
 <div id="counter">0</div>
 <div id="step">step: 1</div>
 
 <div id="mobileControls">
-    <button onclick="toggleShift()">Shift</button>
-    <button onclick="change(-step)">-</button>
-    <button onclick="reset()">0</button>
-    <button onclick="change(step)">+</button>
+    <button id="btnMinus">-</button>
+    <button id="btnReset">0</button>
+    <button id="btnPlus">+</button>
+    <button id="btnShift">Shift</button>
 </div>
 
 <script>
 let count = 0;
 let step = 1;
-
-let isShift = false;
-let isLight = false; // false = dark mode（初期）
+let shiftOn = false;
 
 const counter = document.getElementById("counter");
 const stepDisplay = document.getElementById("step");
@@ -86,18 +86,6 @@ function update() {
     stepDisplay.textContent = "step: " + step;
 }
 
-// 背景・文字色更新
-function updateTheme() {
-    if (isLight) {
-        body.style.background = "#fff";
-        body.style.color = "#000";
-    } else {
-        body.style.background = "#111";
-        body.style.color = "#fff";
-    }
-}
-
-// カウント
 function change(val) {
     count += val;
     update();
@@ -108,78 +96,113 @@ function reset() {
     update();
 }
 
-// Shiftトグル（スマホ用）
-function toggleShift() {
-    isShift = !isShift;
-    stepDisplay.style.opacity = isShift ? 1 : 0;
+// テーマ切り替え
+function setLightMode(isLight) {
+    if (isLight) {
+        body.style.background = "#fff";
+        body.style.color = "#000";
+    } else {
+        body.style.background = "#111";
+        body.style.color = "#fff";
+    }
 }
 
-// キー入力
+// L / D
 document.addEventListener("keydown", (e) => {
-
-    // テーマ変更
-    if (e.key === "l" || e.key === "L") {
-        isLight = true;
-        updateTheme();
-    }
-    if (e.key === "d" || e.key === "D") {
-        isLight = false;
-        updateTheme();
-    }
-
-    // Shift表示
-    if (e.key === "Shift") {
-        isShift = true;
-        stepDisplay.style.opacity = 1;
-    }
-
-    // +操作
-    if (["w","d","ArrowUp","ArrowRight",";"].includes(e.key)) {
-        if (e.shiftKey || isShift) {
-            step++;
-        } else {
-            change(step);
-        }
-    }
-
-    // -操作
-    if (["s","a","ArrowDown","ArrowLeft","-"].includes(e.key)) {
-        if (e.shiftKey || isShift) {
-            step--;
-        } else {
-            change(-step);
-        }
-    }
+    if (e.key.toLowerCase() === "l") setLightMode(false);
+    if (e.key.toLowerCase() === "d") setLightMode(true);
 });
 
+// Shift表示（PC）
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Shift") {
+        stepDisplay.style.opacity = 1;
+    }
+});
 document.addEventListener("keyup", (e) => {
     if (e.key === "Shift") {
-        isShift = false;
         stepDisplay.style.opacity = 0;
     }
 });
 
-// クリック操作（PC）
-document.addEventListener("mousedown", (e) => {
+// 入力判定
+function add() { change(step); }
+function sub() { change(-step); }
 
-    if (e.shiftKey || isShift) {
-        if (e.button === 2) {
-            step++;
-        } else if (e.button === 0) {
-            step--;
-        }
+function flashButton(btn) {
+    btn.classList.add("active");
+    setTimeout(() => btn.classList.remove("active"), 500);
+}
+
+// キーボード操作
+document.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+
+    // +系
+    if (k === "w" || k === "d" || k === "arrowup" || k === "arrowright" || k === ";") {
+        if (e.shiftKey) step++;
+        else add();
+        return;
+    }
+
+    // -系
+    if (k === "s" || k === "a" || k === "arrowdown" || k === "arrowleft" || k === "-") {
+        if (e.shiftKey) step--;
+        else sub();
+        return;
+    }
+});
+
+// マウス（PC）
+document.addEventListener("mousedown", (e) => {
+    if (e.shiftKey) {
+        if (e.button === 2) step++;
+        if (e.button === 0) step--;
         update();
         return;
     }
 
     if (e.button === 0) change(-step);
-    else if (e.button === 2) change(step);
-    else if (e.button === 1) reset();
+    if (e.button === 2) change(step);
+    if (e.button === 1) reset();
 });
 
 document.addEventListener("contextmenu", e => e.preventDefault());
 
-updateTheme();
+document.addEventListener("wheel", (e) => {
+    if (e.shiftKey) {
+        if (e.deltaY < 0) step++;
+        else step--;
+        update();
+        return;
+    }
+
+    if (e.deltaY < 0) change(step);
+    else change(-step);
+});
+
+// スマホ
+const btnMinus = document.getElementById("btnMinus");
+const btnPlus = document.getElementById("btnPlus");
+const btnReset = document.getElementById("btnReset");
+const btnShift = document.getElementById("btnShift");
+
+btnPlus.onclick = () => { change(step); flashButton(btnPlus); };
+btnMinus.onclick = () => { change(-step); flashButton(btnMinus); };
+btnReset.onclick = () => { reset(); flashButton(btnReset); };
+
+// Shiftトグル（スマホ）
+btnShift.onclick = () => {
+    shiftOn = !shiftOn;
+    btnShift.classList.toggle("active", shiftOn);
+};
+
+// スマホはShiftON時だけstep変更扱い
+document.addEventListener("mousedown", (e) => {
+    if (shiftOn && e.button === 0) step--;
+    if (shiftOn && e.button === 2) step++;
+});
+
 update();
 </script>
 
