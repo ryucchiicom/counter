@@ -4,11 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>counter</title>
+
 <style>
     body {
         margin: 0;
-        background: #111;
-        color: #fff;
         font-family: sans-serif;
         display: flex;
         justify-content: center;
@@ -16,6 +15,7 @@
         height: 100vh;
         user-select: none;
         flex-direction: column;
+        transition: 0.2s;
     }
 
     #counter {
@@ -38,8 +38,8 @@
     }
 
     button {
-        font-size: 24px;
-        padding: 15px 25px;
+        font-size: 22px;
+        padding: 12px 18px;
         border: none;
         border-radius: 10px;
         background: #333;
@@ -57,12 +57,14 @@
     }
 </style>
 </head>
+
 <body>
 
 <div id="counter">0</div>
 <div id="step">step: 1</div>
 
 <div id="mobileControls">
+    <button onclick="toggleShift()">Shift</button>
     <button onclick="change(-step)">-</button>
     <button onclick="reset()">0</button>
     <button onclick="change(step)">+</button>
@@ -72,17 +74,30 @@
 let count = 0;
 let step = 1;
 
+let isShift = false;
+let isLight = false; // false = dark mode（初期）
+
 const counter = document.getElementById("counter");
 const stepDisplay = document.getElementById("step");
-
-// スマホ判定
-const isMobile = window.matchMedia("(pointer: coarse)").matches;
+const body = document.body;
 
 function update() {
     counter.textContent = count;
     stepDisplay.textContent = "step: " + step;
 }
 
+// 背景・文字色更新
+function updateTheme() {
+    if (isLight) {
+        body.style.background = "#fff";
+        body.style.color = "#000";
+    } else {
+        body.style.background = "#111";
+        body.style.color = "#fff";
+    }
+}
+
+// カウント
 function change(val) {
     count += val;
     update();
@@ -93,72 +108,78 @@ function reset() {
     update();
 }
 
-// Shift表示（PCのみ）
+// Shiftトグル（スマホ用）
+function toggleShift() {
+    isShift = !isShift;
+    stepDisplay.style.opacity = isShift ? 1 : 0;
+}
+
+// キー入力
 document.addEventListener("keydown", (e) => {
+
+    // テーマ変更
+    if (e.key === "l" || e.key === "L") {
+        isLight = true;
+        updateTheme();
+    }
+    if (e.key === "d" || e.key === "D") {
+        isLight = false;
+        updateTheme();
+    }
+
+    // Shift表示
     if (e.key === "Shift") {
+        isShift = true;
         stepDisplay.style.opacity = 1;
+    }
+
+    // +操作
+    if (["w","d","ArrowUp","ArrowRight",";"].includes(e.key)) {
+        if (e.shiftKey || isShift) {
+            step++;
+        } else {
+            change(step);
+        }
+    }
+
+    // -操作
+    if (["s","a","ArrowDown","ArrowLeft","-"].includes(e.key)) {
+        if (e.shiftKey || isShift) {
+            step--;
+        } else {
+            change(-step);
+        }
     }
 });
 
 document.addEventListener("keyup", (e) => {
     if (e.key === "Shift") {
+        isShift = false;
         stepDisplay.style.opacity = 0;
     }
 });
 
-// PC操作のみ有効
-if (!isMobile) {
+// クリック操作（PC）
+document.addEventListener("mousedown", (e) => {
 
-    document.addEventListener("mousedown", (e) => {
-
-        if (e.shiftKey) {
-            if (e.button === 2) {
-                step++;
-            } else if (e.button === 0) {
-                step--;
-            }
-            update();
-            return;
+    if (e.shiftKey || isShift) {
+        if (e.button === 2) {
+            step++;
+        } else if (e.button === 0) {
+            step--;
         }
+        update();
+        return;
+    }
 
-        if (e.button === 0) {
-            change(-step);
-        } else if (e.button === 2) {
-            change(step);
-        } else if (e.button === 1) {
-            reset();
-        }
-    });
+    if (e.button === 0) change(-step);
+    else if (e.button === 2) change(step);
+    else if (e.button === 1) reset();
+});
 
-    document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("contextmenu", e => e.preventDefault());
 
-    document.addEventListener("wheel", (e) => {
-
-        if (e.shiftKey) {
-            if (e.deltaY < 0) {
-                step++;
-            } else {
-                step--;
-            }
-            update();
-            return;
-        }
-
-        if (e.deltaY < 0) {
-            change(step);
-        } else {
-            change(-step);
-        }
-    });
-
-    document.addEventListener("mousedown", (e) => {
-        if (e.button === 1 && e.ctrlKey) {
-            step = 1;
-            update();
-        }
-    });
-}
-
+updateTheme();
 update();
 </script>
 
